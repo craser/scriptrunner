@@ -4,11 +4,11 @@
 	"Author": "Chris Raser",
 	"Actions": [
 		{
-			"Name": "Counter",
-			"UUID": "io.raser.streamdeck.scriptrunner.increment",
+			"Name": "Run Script",
+			"UUID": "io.raser.streamdeck.scriptrunner.runscript",
 			"Icon": "imgs/actions/counter/icon",
 			"Tooltip": "Displays a count, which increments by one on press.",
-			"PropertyInspectorPath": "ui/increment-counter.html",
+			"PropertyInspectorPath": "ui/run-script.html",
 			"Controllers": [
 				"Keypad"
 			],

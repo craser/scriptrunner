@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <title>Increment Counter Settings</title>
+    <meta charset="utf-8" />
+    <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+</head>
+
+<body>
+    <sdpi-item label="Default Title">
+        <sdpi-textfield
+                setting="defaultTitle"
+                pattern="/^[a-z ,.'-]+$/i"
+                placeholder="Default Title"
+                >
+        </sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Script">
+        <sdpi-file setting="scriptPath"></sdpi-file>
+    </sdpi-item>
+</body>
+
+</html>
