@@ -6,6 +6,7 @@ import streamDeck, {
 	WillAppearEvent
 } from "@elgato/streamdeck";
 import {execFileSync} from 'node:child_process';
+import { getColorPngPath, isColorAvailable } from '../utils/color-pngs';
 
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.
@@ -33,12 +34,7 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
 	}
 
 	/**
-	 * Listens for the {@link SingletonAction.onKeyDown} event which is emitted by Stream Deck when an action is
-	 * pressed. Stream Deck provides various events for tracking interaction with devices including key down/up, dial
-	 * rotations, and device connectivity, etc. When triggered, {@link ev} object contains information about the event
-	 * including any payloads and action information where applicable. In this example, our action will display a
-	 * counter that increments by one each press. We track the current count on the action's persisted settings using
-	 * `setSettings` and `getSettings`.
+	 * Runs the configured script & updates the button per the output JSON.
 	 */
 	override async onKeyDown(ev: KeyDownEvent<RunScriptSettings>): Promise<void> {
 		try {
@@ -47,9 +43,20 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
 			const stdout = execFileSync(settings.scriptPath);
 			const json = stdout.toString()?.trim();
 			streamDeck.logger.info(`script returned: '${json}'`);
-			const {title} = JSON.parse(json);
-			streamDeck.logger.info(`setting title: '${title}'`);
-			await ev.action.setTitle(title?.toString());
+			const {title, color} = JSON.parse(json) as ScriptReturnSettings;
+
+			if (title !== undefined) {
+				streamDeck.logger.info(`setting title: '${title}'`);
+				await ev.action.setTitle(title?.toString());
+			}
+
+			if (color && isColorAvailable(color)) {
+				const colorPath = getColorPngPath(color);
+				if (colorPath) {
+					streamDeck.logger.info(`setting background color: '${color}' -> '${colorPath}'`);
+					await ev.action.setImage(colorPath);
+				}
+			}
 		} catch (e) {
 			streamDeck.logger.error(`ERROR running script ${ev.payload.settings.scriptPath}`);
 			streamDeck.logger.error(e);
@@ -71,5 +78,6 @@ type RunScriptSettings = {
  * Return JSON from scripts.
  */
 type ScriptReturnSettings = {
-	title?: string
+	title?: string;
+	color?: string;
 };
