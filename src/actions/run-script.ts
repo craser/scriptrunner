@@ -13,8 +13,12 @@ import {execFileSync} from 'node:child_process';
 @action({ UUID: "io.raser.streamdeck.scriptrunner.runscript" })
 export class RunScript extends SingletonAction<RunScriptSettings> {
 
+	/**
+	 * Called when the user updates the config in the Stream Deck app. Just keeps the display in sync
+	 * with the actual config.
+	 */
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<RunScriptSettings>) {
-		return ev.action.setTitle(ev.payload.settings.defaultTitle || 'plop');
+		return ev.action.setTitle(ev.payload.settings.defaultTitle || '');
 	}
 
 	/**
