@@ -6,7 +6,7 @@
 		{
 			"Name": "Run Script",
 			"UUID": "io.raser.streamdeck.scriptrunner.runscript",
-			"Icon": "imgs/actions/counter/icon",
+			"Icon": "imgs/actions/scriptrunner/icon",
 			"Tooltip": "Displays a count, which increments by one on press.",
 			"PropertyInspectorPath": "ui/run-script.html",
 			"Controllers": [
@@ -14,7 +14,7 @@
 			],
 			"States": [
 				{
-					"Image": "imgs/actions/counter/key",
+					"Image": "imgs/actions/scriptrunner/icon",
 					"TitleAlignment": "middle"
 				}
 			]
