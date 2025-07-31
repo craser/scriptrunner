@@ -15,8 +15,10 @@ const COLORS = [
 
 const n = Math.round(Math.random() * 10);
 const color = COLORS[n];
+const image = `imgs/colors/${color}.png`
 
 console.log(JSON.stringify({
-    title: color,
-    color
+    title: `[[${color}]]`,
+    //color,
+    image
 }));
