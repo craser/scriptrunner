@@ -7,7 +7,7 @@
 			"Name": "Run Script",
 			"UUID": "io.raser.streamdeck.scriptrunner.runscript",
 			"Icon": "imgs/actions/scriptrunner/icon",
-			"Tooltip": "Displays a count, which increments by one on press.",
+			"Tooltip": "Runs a local script & updates the button",
 			"PropertyInspectorPath": "ui/run-script.html",
 			"Controllers": [
 				"Keypad"
