@@ -40,7 +40,8 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
         try {
             streamDeck.logger.info(`running script: '${ev.payload.settings.scriptPath}'`);
             const {settings} = ev.payload;
-            const stdout = execFileSync(settings.scriptPath, [settings.scriptArguments]);
+            const args = settings.scriptArguments ? this.parseArgumentsLiteral(settings.scriptArguments) : [];
+            const stdout = execFileSync(settings.scriptPath, args);
             const json = stdout.toString()?.trim();
             streamDeck.logger.info(`script returned: '${json}'`);
             const {title, color, image} = JSON.parse(json) as ScriptReturnSettings;
@@ -66,6 +67,75 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
             streamDeck.logger.error(e);
             await ev.action.setTitle('ERROR');
         }
+    }
+
+    /**
+     * Parse the string entered by the user into an Array of string arguments we can
+     * pass to the script.
+     *
+     * For example,
+     *   • "5" -> "5"
+     *   • "'one two' three" -> "one two", "three"
+     *   • "'"wrapped"'" -> "\"wrapped\""
+     *   • ""\"wrapped\"" -> "\"wrapped\""
+     *
+     * @param args
+     */
+    parseArgumentsLiteral(literal: string): string[] {
+        const args: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        let quoteChar = '';
+        let i = 0;
+        
+        while (i < literal.length) {
+            const char = literal[i];
+            
+            if (!inQuotes) {
+                // Not in quotes - look for quote start or whitespace
+                if (char === '"' || char === "'") {
+                    inQuotes = true;
+                    quoteChar = char;
+                } else if (char === ' ' || char === '\t') {
+                    // Whitespace - end current argument if it has content
+                    if (current.length > 0) {
+                        args.push(current);
+                        current = '';
+                    }
+                    // Skip additional whitespace
+                    while (i + 1 < literal.length && (literal[i + 1] === ' ' || literal[i + 1] === '\t')) {
+                        i++;
+                    }
+                } else {
+                    current += char;
+                }
+            } else {
+                // In quotes - look for matching quote end
+                if (char === quoteChar) {
+                    inQuotes = false;
+                    quoteChar = '';
+                } else if (char === '\\' && i + 1 < literal.length) {
+                    // Handle escape sequences
+                    const nextChar = literal[i + 1];
+                    if (nextChar === '"' || nextChar === "'" || nextChar === '\\') {
+                        current += nextChar;
+                        i++; // Skip the escaped character
+                    } else {
+                        current += char;
+                    }
+                } else {
+                    current += char;
+                }
+            }
+            i++;
+        }
+        
+        // Add final argument if any
+        if (current.length > 0) {
+            args.push(current);
+        }
+        
+        return args;
     }
 }
 
