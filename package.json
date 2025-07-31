@@ -3,11 +3,12 @@
         "build": "rollup -c",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptrunner\"",
         "validate": "streamdeck validate io.raser.streamdeck.scriptrunner.sdPlugin",
-        "lint": "eslint src --ext .ts,.js"
+        "lint": "eslint src"
     },
     "type": "module",
     "devDependencies": {
         "@elgato/cli": "^1.5.0",
+        "@eslint/js": "^9.32.0",
         "@rollup/plugin-commonjs": "^28.0.0",
         "@rollup/plugin-node-resolve": "^15.2.2",
         "@rollup/plugin-terser": "^0.4.4",
