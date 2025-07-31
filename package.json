@@ -1,7 +1,9 @@
 {
     "scripts": {
         "build": "rollup -c",
-        "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptrunner\""
+        "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptrunner\"",
+        "validate": "streamdeck validate io.raser.streamdeck.scriptrunner.sdPlugin",
+        "lint": "eslint src --ext .ts,.js"
     },
     "type": "module",
     "devDependencies": {
@@ -12,7 +14,10 @@
         "@rollup/plugin-typescript": "^12.1.0",
         "@tsconfig/node20": "^20.1.2",
         "@types/node": "~20.15.0",
+        "@typescript-eslint/eslint-plugin": "^8.38.0",
+        "@typescript-eslint/parser": "^8.38.0",
         "canvas": "^3.1.2",
+        "eslint": "^9.32.0",
         "rollup": "^4.0.2",
         "tslib": "^2.6.2",
         "typescript": "^5.2.2"
