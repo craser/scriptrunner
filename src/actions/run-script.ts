@@ -40,7 +40,7 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
         try {
             streamDeck.logger.info(`running script: '${ev.payload.settings.scriptPath}'`);
             const {settings} = ev.payload;
-            const stdout = execFileSync(settings.scriptPath);
+            const stdout = execFileSync(settings.scriptPath, [settings.scriptArguments]);
             const json = stdout.toString()?.trim();
             streamDeck.logger.info(`script returned: '${json}'`);
             const {title, color, image} = JSON.parse(json) as ScriptReturnSettings;
@@ -74,7 +74,8 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
  */
 type RunScriptSettings = {
     defaultTitle?: string;
-    scriptPath: string
+    scriptPath: string;
+    scriptArguments?: string;
 };
 
 
