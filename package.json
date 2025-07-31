@@ -3,7 +3,10 @@
         "build": "rollup -c",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptrunner\"",
         "validate": "streamdeck validate io.raser.streamdeck.scriptrunner.sdPlugin",
-        "lint": "eslint src"
+        "lint": "eslint src",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage"
     },
     "type": "module",
     "devDependencies": {
@@ -14,12 +17,15 @@
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^12.1.0",
         "@tsconfig/node20": "^20.1.2",
+        "@types/jest": "^30.0.0",
         "@types/node": "~20.15.0",
         "@typescript-eslint/eslint-plugin": "^8.38.0",
         "@typescript-eslint/parser": "^8.38.0",
         "canvas": "^3.1.2",
         "eslint": "^9.32.0",
+        "jest": "^30.0.5",
         "rollup": "^4.0.2",
+        "ts-jest": "^29.4.0",
         "tslib": "^2.6.2",
         "typescript": "^5.2.2"
     },
