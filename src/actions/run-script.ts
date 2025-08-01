@@ -7,7 +7,7 @@ import streamDeck, {
 } from "@elgato/streamdeck";
 import {execFileSync} from 'node:child_process';
 import {getColorPngPath, isColorAvailable} from '../utils/color-pngs';
-import {ArgumentStringParser} from './argument-string-parser';
+import {ArgumentStringParser} from '../utils/argument-string-parser';
 
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.

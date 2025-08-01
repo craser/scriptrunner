@@ -5,7 +5,7 @@ import streamDeck from '@elgato/streamdeck';
 import { execFileSync } from 'node:child_process';
 import { RunScript } from '../../src/actions/run-script';
 import { getColorPngPath, isColorAvailable } from '../../src/utils/color-pngs';
-import { ArgumentStringParser } from '../../src/actions/argument-string-parser';
+import { ArgumentStringParser } from '../../src/utils/argument-string-parser';
 
 // Mock all dependencies
 jest.mock('@elgato/streamdeck', () => ({
@@ -33,7 +33,7 @@ jest.mock('../../src/utils/color-pngs', () => ({
     isColorAvailable: jest.fn(),
 }));
 
-jest.mock('../../src/actions/argument-string-parser', () => ({
+jest.mock('../../src/utils/argument-string-parser', () => ({
     ArgumentStringParser: jest.fn().mockImplementation(() => ({
         parse: jest.fn(),
     })),

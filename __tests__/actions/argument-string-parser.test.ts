@@ -1,7 +1,7 @@
 // ABOUTME: Test suite for ArgumentStringParser class
 // ABOUTME: Comprehensive tests covering all parsing scenarios and edge cases
 
-import { ArgumentStringParser } from '../../src/actions/argument-string-parser';
+import { ArgumentStringParser } from '../../src/utils/argument-string-parser';
 
 describe('ArgumentStringParser', () => {
     let parser: ArgumentStringParser;
