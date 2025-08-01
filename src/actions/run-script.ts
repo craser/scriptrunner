@@ -8,6 +8,9 @@ import streamDeck, {
 import {execFileSync} from 'node:child_process';
 import {getColorPngPath, isColorAvailable} from '../utils/color-pngs';
 import {ArgumentStringParser} from '../utils/argument-string-parser';
+import {DisplaySettings} from './display-settings';
+import {RunScriptSettings} from './run-script-settings';
+
 
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.
@@ -46,7 +49,7 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
             const stdout = execFileSync(settings.scriptPath, args);
             const json = stdout.toString()?.trim();
             streamDeck.logger.info(`script returned: '${json}'`);
-            const {title, color, image} = JSON.parse(json) as ScriptReturnSettings;
+            const {title, color, image} = JSON.parse(json) as DisplaySettings;
 
             if (title !== undefined) {
                 streamDeck.logger.info(`setting title: '${title}'`);
@@ -72,22 +75,3 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
     }
 
 }
-
-/**
- * Settings for {@link RunScript}.
- */
-type RunScriptSettings = {
-    defaultTitle?: string;
-    scriptPath: string;
-    scriptArguments?: string;
-};
-
-
-/**
- * Return JSON from scripts.
- */
-type ScriptReturnSettings = {
-    title?: string;
-    color?: string;
-    image?: string;
-};
