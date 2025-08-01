@@ -6,7 +6,7 @@
 		{
 			"Name": "Run Script",
 			"UUID": "io.raser.streamdeck.scriptrunner.runscript",
-			"Icon": "imgs/actions/scriptrunner/icon",
+			"Icon": "imgs/actions/scriptrunner/scriptrunner-icon",
 			"Tooltip": "Runs a local script & updates the button",
 			"PropertyInspectorPath": "ui/run-script.html",
 			"Controllers": [
@@ -14,17 +14,17 @@
 			],
 			"States": [
 				{
-					"Image": "imgs/actions/scriptrunner/icon",
+					"Image": "imgs/actions/scriptrunner/scriptrunner-icon",
 					"TitleAlignment": "middle"
 				}
 			]
 		}
 	],
 	"Category": "ScriptRunner",
-	"CategoryIcon": "imgs/plugin/category-icon",
+	"CategoryIcon": "imgs/plugin/scriptrunner-icon",
 	"CodePath": "bin/plugin.js",
 	"Description": "Run local scripts & update button displays",
-	"Icon": "imgs/plugin/marketplace",
+	"Icon": "imgs/plugin/scriptrunner-icon",
 	"SDKVersion": 2,
 	"Software": {
 		"MinimumVersion": "6.5"
