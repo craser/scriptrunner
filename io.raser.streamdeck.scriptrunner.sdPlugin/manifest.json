@@ -18,6 +18,22 @@
 					"TitleAlignment": "middle"
 				}
 			]
+		},
+		{
+			"Name": "Run Interval",
+			"UUID": "io.raser.streamdeck.scriptrunner.runinterval",
+			"Icon": "imgs/actions/scriptrunner/scriptrunner-icon",
+			"Tooltip": "Runs a local script & updates the button on a timer",
+			"PropertyInspectorPath": "ui/run-interval.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/scriptrunner/scriptrunner-icon",
+					"TitleAlignment": "middle"
+				}
+			]
 		}
 	],
 	"Category": "ScriptRunner",

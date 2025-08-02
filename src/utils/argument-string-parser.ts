@@ -30,7 +30,12 @@ export class ArgumentStringParser {
      *
      * @param literal The argument string to parse
      */
-    parse(literal: string): string[] {
+    parse(literal: string | undefined): string[] {
+
+        if (!literal) {
+            return [];
+        }
+
         const state: ParseState = { args: [], current: '', inQuotes: false, quoteChar: '' };
         
         for (let i = 0; i < literal.length; i++) {

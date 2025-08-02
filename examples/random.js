@@ -13,7 +13,7 @@ const COLORS = [
     'orange'
 ]
 
-const n = Math.round(Math.random() * 10);
+const n = Math.round(Math.random() * 100) % COLORS.length;
 const color = COLORS[n];
 const image = `imgs/colors/${color}.png`
 

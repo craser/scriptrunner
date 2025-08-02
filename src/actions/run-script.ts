@@ -6,7 +6,6 @@ import streamDeck, {
     WillAppearEvent
 } from "@elgato/streamdeck";
 import {execFileSync} from 'node:child_process';
-import {getColorPngPath, isColorAvailable} from '../utils/color-pngs';
 import {ArgumentStringParser} from '../utils/argument-string-parser';
 import {DisplaySettings} from './display-settings';
 import {RunScriptSettings} from './run-script-settings';
@@ -27,10 +26,7 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
     }
 
     /**
-     * The {@link SingletonAction.onWillAppear} event is useful for setting the visual representation of an action when
-     * it becomes visible. This could be due to the Stream Deck first starting up, or the user navigating between pages
-     * / folders etc.. There is also an inverse of this event in the form of {@link streamDeck.client.onWillDisappear}.
-     * In this example, we're setting the title to the "count" that is incremented in {@link RunScript.onKeyDown}.
+     * Called when the button is about to be shown either on the device, or in the Stream Deck app.
      */
     override onWillAppear(ev: WillAppearEvent<RunScriptSettings>): void | Promise<void> {
         const defaultTitle = ev.payload.settings.defaultTitle || '';
@@ -42,31 +38,14 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
      */
     override async onKeyDown(ev: KeyDownEvent<RunScriptSettings>): Promise<void> {
         try {
-            streamDeck.logger.info(`running script: '${ev.payload.settings.scriptPath}'`);
-            const {settings} = ev.payload;
-            const parser = new ArgumentStringParser();
-            const args = settings.scriptArguments ? parser.parse(settings.scriptArguments) : [];
-            const stdout = execFileSync(settings.scriptPath, args);
+            const {scriptPath, scriptArguments} = ev.payload.settings;
+            const argumentsParser = new ArgumentStringParser();
+            const args = argumentsParser.parse(scriptArguments);
+            streamDeck.logger.info(`running script: '${scriptPath}'`);
+            const stdout = execFileSync(scriptPath, args);
             const json = stdout.toString()?.trim();
             streamDeck.logger.info(`script returned: '${json}'`);
-            const {title, color, image} = JSON.parse(json) as DisplaySettings;
-
-            if (title !== undefined) {
-                streamDeck.logger.info(`setting title: '${title}'`);
-                await ev.action.setTitle(title?.toString());
-            }
-
-            // Handle background image - image takes precedence over color
-            if (image) {
-                streamDeck.logger.info(`setting background image: '${image}'`);
-                await ev.action.setImage(image);
-            } else if (color && isColorAvailable(color)) {
-                const colorPath = getColorPngPath(color);
-                if (colorPath) {
-                    streamDeck.logger.info(`setting background color: '${color}' -> '${colorPath}'`);
-                    await ev.action.setImage(colorPath);
-                }
-            }
+            await DisplaySettings.parseJson(json).apply(ev);
         } catch (e) {
             streamDeck.logger.error(`ERROR running script ${ev.payload.settings.scriptPath}`);
             streamDeck.logger.error(e);
