@@ -3,14 +3,14 @@ import streamDeck, {
     DidReceiveSettingsEvent,
     KeyDownEvent,
     SingletonAction,
-    WillAppearEvent, WillDisappearEvent
+    WillAppearEvent,
+    WillDisappearEvent
 } from "@elgato/streamdeck";
 import {execFileSync} from 'node:child_process';
 import {ArgumentStringParser} from '../utils/argument-string-parser';
-import {setInterval, clearInterval} from 'node:timers';
+import {clearInterval, setInterval} from 'node:timers';
 import {RunIntervalSettings} from './run-interval-settings';
 import {DisplaySettings} from './display-settings';
-import {ActionEvent} from '@elgato/streamdeck/types/common/events';
 
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.
@@ -36,11 +36,17 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
         return ev.action.setTitle(ev.payload.settings.defaultTitle || '');
     }
 
-    private startInterval(ev: ActionEvent<RunIntervalSettings>) {
+    /**
+     * When I have the patience to spelunk through the type system, I'll figure out what ev should actually be. For
+     * now, the union type does the job, but man... feels ugly.
+     *
+     * @param ev
+     * @private
+     */
+    private startInterval(ev: DidReceiveSettingsEvent<RunIntervalSettings> | WillAppearEvent<RunIntervalSettings>) {
         this.clearIntervals();
         if (this.validateIntervalSettings(ev.payload.settings)) {
-            const {settings} = ev.payload;
-            const {intervalScriptPath, intervalScriptArguments, intervalDelay} = settings;
+            const {intervalScriptPath, intervalScriptArguments, intervalDelay} = ev.payload.settings;
             this.intervals.push(setInterval(async () => {
                 streamDeck.logger.info(`running interval`);
                 const displaySettings = await this.executeScript(intervalScriptPath, intervalScriptArguments);

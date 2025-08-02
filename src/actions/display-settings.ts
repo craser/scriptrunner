@@ -1,4 +1,4 @@
-import streamDeck, {KeyDownEvent, WillAppearEvent} from '@elgato/streamdeck';
+import streamDeck, {DidReceiveSettingsEvent, KeyDownEvent, WillAppearEvent} from '@elgato/streamdeck';
 import {getColorPngPath, isColorAvailable} from '../utils/color-pngs';
 
 /**
@@ -20,7 +20,7 @@ export class DisplaySettings {
         this.image = image;
     }
 
-    async apply(ev: WillAppearEvent | KeyDownEvent) {
+    async apply(ev: WillAppearEvent | KeyDownEvent | DidReceiveSettingsEvent) {
 
         if (this.title !== undefined) {
             streamDeck.logger.info(`setting title: '${this.title}'`);
