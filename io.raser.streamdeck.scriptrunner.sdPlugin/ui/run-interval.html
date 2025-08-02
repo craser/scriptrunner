@@ -31,21 +31,21 @@
     </sdpi-item>
 
     <sdpi-item label="Monitor Script (run at regular intervals)">
-        <sdpi-file setting="monitorScriptPath" required></sdpi-file>
+        <sdpi-file setting="intervalScriptPath" required></sdpi-file>
     </sdpi-item>
 
-    <sdpi-item label="Monitor Script Arguments">
+    <sdpi-item label="Interval Script Arguments">
         <sdpi-textfield
-                setting="monitorScriptArguments"
+                setting="intervalScriptArguments"
                 pattern="/.*/"
                 placeholder=""
         >
         </sdpi-textfield>
     </sdpi-item>
 
-    <sdpi-item label="Monitor Interval (seconds)">
+    <sdpi-item label="Interval Delay (seconds)">
         <sdpi-textfield
-                setting="interval"
+                setting="intervalDelay"
                 pattern="/^[0-9]{1,5}$/"
                 placeholder="10"
         >

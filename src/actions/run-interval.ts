@@ -10,6 +10,7 @@ import {ArgumentStringParser} from '../utils/argument-string-parser';
 import {setInterval, clearInterval} from 'node:timers';
 import {RunIntervalSettings} from './run-interval-settings';
 import {DisplaySettings} from './display-settings';
+import {ActionEvent} from '@elgato/streamdeck/types/common/events';
 
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.
@@ -30,7 +31,40 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
      * with the actual config.
      */
     override onDidReceiveSettings(ev: DidReceiveSettingsEvent<RunIntervalSettings>) {
+        streamDeck.logger.info("onDidReceiveSettings");
+        this.startInterval(ev);
         return ev.action.setTitle(ev.payload.settings.defaultTitle || '');
+    }
+
+    private startInterval(ev: ActionEvent<RunIntervalSettings>) {
+        this.clearIntervals();
+        if (this.validateIntervalSettings(ev.payload.settings)) {
+            const {settings} = ev.payload;
+            const {intervalScriptPath, intervalScriptArguments, intervalDelay} = settings;
+            this.intervals.push(setInterval(async () => {
+                streamDeck.logger.info(`running interval`);
+                const displaySettings = await this.executeScript(intervalScriptPath, intervalScriptArguments);
+                await displaySettings.apply(ev);
+            }, intervalDelay * 1000));
+        }
+    }
+
+    /**
+     * Returns true if the settings can be used to run a local script on an interval.
+     *
+     * @param settings
+     * @private
+     */
+    private validateIntervalSettings(settings: RunIntervalSettings): boolean {
+        streamDeck.logger.info(`validating interval settings: ${JSON.stringify(settings)}`);
+        const {intervalScriptPath, intervalDelay} = settings;
+        streamDeck.logger.info(`intervalScriptPath (${typeof intervalScriptPath}): ${intervalScriptPath}`);
+        streamDeck.logger.info(`intervalDelay (${typeof intervalDelay}): ${intervalDelay}`);
+
+
+        let valid = !!intervalScriptPath && intervalDelay > 0;
+        streamDeck.logger.info(`interval settings valid: ${valid}`);
+        return valid;
     }
 
     /**
@@ -41,14 +75,10 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
      */
     override onWillAppear(ev: WillAppearEvent<RunIntervalSettings>): void | Promise<void> {
         streamDeck.logger.info("onWillAppear");
-        this.intervals.push(setInterval(() => {
-            streamDeck.logger.info(`running interval`);
-            const now = new Date();
-            const time = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`
-            ev.action.setTitle(time);
-        }, 1000));
+        this.startInterval(ev);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     override onWillDisappear(ev: WillDisappearEvent<RunIntervalSettings>): void | Promise<void> {
         this.clearIntervals();
     }
@@ -58,19 +88,26 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
      */
     override async onKeyDown(ev: KeyDownEvent<RunIntervalSettings>): Promise<void> {
         try {
-            streamDeck.logger.info(`running script: '${ev.payload.settings.scriptPath}'`);
             const {settings} = ev.payload;
-            const parser = new ArgumentStringParser();
-            const args = settings.scriptArguments ? parser.parse(settings.scriptArguments) : [];
-            const stdout = execFileSync(settings.scriptPath, args);
-            const json = stdout.toString()?.trim();
-            streamDeck.logger.info(`script returned: '${json}'`);
-            await DisplaySettings.parseJson(json).apply(ev);
+            const {scriptPath, scriptArguments} = settings;
+            const displaySettings = await this.executeScript(scriptPath, scriptArguments);
+            await displaySettings.apply(ev);
         } catch (e) {
             streamDeck.logger.error(`ERROR running script ${ev.payload.settings.scriptPath}`);
             streamDeck.logger.error(e);
             await ev.action.setTitle('ERROR');
         }
+    }
+
+    async executeScript(scriptPath: string, scriptArguments: string | null | undefined): Promise<DisplaySettings> {
+        streamDeck.logger.info(`running script: '${scriptPath}'`);
+        const parser = new ArgumentStringParser();
+        const args = scriptArguments ? parser.parse(scriptArguments) : [];
+        const stdout = execFileSync(scriptPath, args);
+        const json = stdout.toString()?.trim();
+        streamDeck.logger.info(`script returned: '${json}'`);
+        const displaySettings = DisplaySettings.parseJson(json);
+        return displaySettings;
     }
 
 }
