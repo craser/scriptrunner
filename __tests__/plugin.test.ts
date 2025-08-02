@@ -35,6 +35,17 @@ jest.mock('../src/actions/run-script', () => ({
     })),
 }));
 
+// Mock the RunInterval action
+jest.mock('../src/actions/run-interval', () => ({
+    RunInterval: jest.fn().mockImplementation(() => ({
+        // Mock RunInterval instance
+        onDidReceiveSettings: jest.fn(),
+        onWillAppear: jest.fn(),
+        onWillDisappear: jest.fn(),
+        onKeyDown: jest.fn(),
+    })),
+}));
+
 describe('plugin', () => {
     // Clear all mocks before each test
     beforeEach(() => {
