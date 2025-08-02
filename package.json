@@ -3,6 +3,7 @@
         "build": "rollup -c",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptrunner\"",
         "validate": "streamdeck validate io.raser.streamdeck.scriptrunner.sdPlugin",
+        "link": "streamdeck link io.raser.streamdeck.scriptrunner.sdPlugin",
         "lint": "eslint src",
         "test": "jest",
         "test:watch": "jest --watch",
