@@ -2,7 +2,7 @@
 // ABOUTME: Tests interval monitoring functionality, script execution, and Stream Deck event handling
 
 import streamDeck from '@elgato/streamdeck';
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { setInterval, clearInterval } from 'node:timers';
 import { RunInterval } from '../src/actions/run-interval';
 import { ArgumentStringParser } from '../src/utils/argument-string-parser';
@@ -15,6 +15,7 @@ jest.mock('@elgato/streamdeck', () => ({
     default: {
         logger: {
             info: jest.fn(),
+            warn: jest.fn(),
             error: jest.fn(),
         },
     },
@@ -25,7 +26,7 @@ jest.mock('@elgato/streamdeck', () => ({
 }));
 
 jest.mock('node:child_process', () => ({
-    execFileSync: jest.fn(),
+    execFile: jest.fn(),
 }));
 
 jest.mock('node:timers', () => ({
@@ -46,7 +47,7 @@ jest.mock('../src/actions/display-settings', () => ({
 }));
 
 // Mock types
-const mockExecFileSync = execFileSync as jest.MockedFunction<typeof execFileSync>;
+const mockExecFile = execFile as jest.MockedFunction<typeof execFile>;
 const mockSetInterval = setInterval as jest.MockedFunction<typeof setInterval>;
 const mockClearInterval = clearInterval as jest.MockedFunction<typeof clearInterval>;
 const mockParseJson = DisplaySettings.parseJson as jest.MockedFunction<typeof DisplaySettings.parseJson>;
@@ -78,8 +79,12 @@ describe('RunInterval', () => {
         };
         (ArgumentStringParser as jest.MockedClass<typeof ArgumentStringParser>).mockImplementation(() => mockArgumentParser);
 
-        // Setup mock execFileSync to return valid JSON
-        mockExecFileSync.mockReturnValue(Buffer.from('{"title": "Test Result"}'));
+        // Setup mock execFile to call callback with valid JSON
+        mockExecFile.mockImplementation((path, args, options, callback) => {
+            const cb = typeof options === 'function' ? options : callback;
+            (cb as any)(null, '{"title": "Test Result"}', '');
+            return {} as any; // Mock ChildProcess
+        });
 
         // Setup mock setInterval to return a timer ID
         mockSetInterval.mockReturnValue(123 as any);
@@ -213,13 +218,17 @@ describe('RunInterval', () => {
             };
 
             mockArgumentParser.parse.mockReturnValue(['arg1', 'arg2']);
-            mockExecFileSync.mockReturnValue(Buffer.from('{"title": "Button Title"}'));
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(null, '{"title": "Button Title"}', '');
+                return {} as any;
+            });
 
             await runInterval.onKeyDown(mockEvent as any);
 
             expect(mockArgumentParser.parse).toHaveBeenCalledWith('arg1 arg2');
             expect(streamDeck.logger.info).toHaveBeenCalledWith("running script: '/path/to/script.sh'");
-            expect(mockExecFileSync).toHaveBeenCalledWith('/path/to/script.sh', ['arg1', 'arg2']);
+            expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', ['arg1', 'arg2'], expect.any(Function));
             expect(streamDeck.logger.info).toHaveBeenCalledWith('script returned: \'{"title": "Button Title"}\'');
             expect(mockParseJson).toHaveBeenCalledWith('{"title": "Button Title"}');
             expect(mockDisplaySettings.apply).toHaveBeenCalledWith(mockEvent);
@@ -237,8 +246,10 @@ describe('RunInterval', () => {
             };
 
             const error = new Error('Script execution failed');
-            mockExecFileSync.mockImplementation(() => {
-                throw error;
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(error, '', 'Script execution failed');
+                return {} as any;
             });
 
             await runInterval.onKeyDown(mockEvent as any);
@@ -263,7 +274,7 @@ describe('RunInterval', () => {
             await runInterval.onKeyDown(mockEvent as any);
 
             expect(mockArgumentParser.parse).not.toHaveBeenCalled();
-            expect(mockExecFileSync).toHaveBeenCalledWith('/path/to/script.sh', []);
+            expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', [], expect.any(Function));
         });
     });
 
@@ -331,36 +342,52 @@ describe('RunInterval', () => {
     describe('executeScript', () => {
         test('should execute script with arguments and return DisplaySettings', async () => {
             mockArgumentParser.parse.mockReturnValue(['--verbose', 'test']);
-            mockExecFileSync.mockReturnValue(Buffer.from('  {"title": "Success"}  '));
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(null, '  {"title": "Success"}  ', '');
+                return {} as any;
+            });
 
             const result = await runInterval.executeScript('/path/to/script.sh', '--verbose test');
 
             expect(streamDeck.logger.info).toHaveBeenCalledWith("running script: '/path/to/script.sh'");
             expect(mockArgumentParser.parse).toHaveBeenCalledWith('--verbose test');
-            expect(mockExecFileSync).toHaveBeenCalledWith('/path/to/script.sh', ['--verbose', 'test']);
+            expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', ['--verbose', 'test'], expect.any(Function));
             expect(streamDeck.logger.info).toHaveBeenCalledWith('script returned: \'{"title": "Success"}\'');
             expect(mockParseJson).toHaveBeenCalledWith('{"title": "Success"}');
             expect(result).toBe(mockDisplaySettings);
         });
 
         test('should handle null script arguments', async () => {
-            mockExecFileSync.mockReturnValue(Buffer.from('{"title": "No Args"}'));
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(null, '{"title": "No Args"}', '');
+                return {} as any;
+            });
 
             await runInterval.executeScript('/path/to/script.sh', null);
 
-            expect(mockExecFileSync).toHaveBeenCalledWith('/path/to/script.sh', []);
+            expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', [], expect.any(Function));
         });
 
         test('should handle undefined script arguments', async () => {
-            mockExecFileSync.mockReturnValue(Buffer.from('{"title": "No Args"}'));
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(null, '{"title": "No Args"}', '');
+                return {} as any;
+            });
 
             await runInterval.executeScript('/path/to/script.sh', undefined);
 
-            expect(mockExecFileSync).toHaveBeenCalledWith('/path/to/script.sh', []);
+            expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', [], expect.any(Function));
         });
 
         test('should trim whitespace from script output', async () => {
-            mockExecFileSync.mockReturnValue(Buffer.from('\n\t  {"title": "Trimmed"}  \n'));
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(null, '\n\t  {"title": "Trimmed"}  \n', '');
+                return {} as any;
+            });
 
             await runInterval.executeScript('/path/to/script.sh', '');
 
@@ -443,6 +470,73 @@ describe('RunInterval', () => {
             );
         });
 
+        test('should only run one instance of interval script at a time', (done) => {
+            const mockEvent = {
+                action: mockAction,
+                payload: {
+                    settings: {
+                        intervalScriptPath: '/path/to/slow-script.sh',
+                        intervalDelay: 1, // 1 second interval
+                    } as RunIntervalSettings,
+                },
+            };
+
+            let scriptExecutionCount = 0;
+            let firstExecutionFinished = false;
+
+            // Mock execFile to simulate a slow script (3 seconds)
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                scriptExecutionCount++;
+                
+                if (scriptExecutionCount === 1) {
+                    // First execution - simulate 3 second delay
+                    setTimeout(() => {
+                        firstExecutionFinished = true;
+                        (cb as any)(null, '{"title": "Slow Script"}', '');
+                    }, 3000);
+                } else if (scriptExecutionCount === 2 && !firstExecutionFinished) {
+                    // Second execution started before first finished - this should NOT happen
+                    done(new Error('Second script execution started before first finished - safety feature not working'));
+                    (cb as any)(null, '{}', '');
+                    return {} as any;
+                }
+                
+                // For any other executions, call callback immediately
+                if (scriptExecutionCount > 2 || firstExecutionFinished) {
+                    (cb as any)(null, '{"title": "Slow Script"}', '');
+                }
+                
+                return {} as any; // Mock ChildProcess
+            });
+
+            // Mock setInterval to fire multiple times quickly
+            let intervalCallback: Function;
+            mockSetInterval.mockImplementation((callback, delay) => {
+                intervalCallback = callback;
+                
+                // Fire the callback immediately (first execution)
+                setTimeout(() => callback(), 10);
+                
+                // Try to fire again after 1 second (before first execution finishes)
+                setTimeout(() => callback(), 1010);
+                
+                // Check that only one execution happened
+                setTimeout(() => {
+                    try {
+                        expect(scriptExecutionCount).toBe(1);
+                        done();
+                    } catch (error) {
+                        done(error);
+                    }
+                }, 2000);
+                
+                return 123 as any;
+            });
+
+            (runInterval as any).startInterval(mockEvent);
+        });
+
         // This test verifies the expected behavior but may fail due to implementation issues
         test('should execute interval script and apply display settings periodically', (done) => {
             const mockEvent = {
@@ -457,7 +551,11 @@ describe('RunInterval', () => {
             };
 
             mockArgumentParser.parse.mockReturnValue(['--status']);
-            mockExecFileSync.mockReturnValue(Buffer.from('{"title": "Status OK"}'));
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(null, '{"title": "Status OK"}', '');
+                return {} as any;
+            });
 
             // Mock setInterval to immediately call the callback function
             mockSetInterval.mockImplementation((callback, delay) => {
@@ -467,7 +565,7 @@ describe('RunInterval', () => {
                     
                     try {
                         expect(streamDeck.logger.info).toHaveBeenCalledWith('running interval');
-                        expect(mockExecFileSync).toHaveBeenCalledWith('/path/to/monitor.sh', ['--status']);
+                        expect(mockExecFile).toHaveBeenCalledWith('/path/to/monitor.sh', ['--status'], expect.any(Function));
                         expect(mockDisplaySettings.apply).toHaveBeenCalledWith(mockEvent);
                         done();
                     } catch (error) {

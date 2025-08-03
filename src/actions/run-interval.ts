@@ -55,7 +55,7 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
                     const scriptStartTime = Date.now();
                     const displaySettings = await this.executeScript(intervalScriptPath, intervalScriptArguments);
                     const elapsed = Date.now() - scriptStartTime
-                    streamDeck.logger.info(`Interval script ${intervalScriptPath} took ${elapsed}ms to run}`);
+                    streamDeck.logger.info(`Interval script ${intervalScriptPath} ran in ${elapsed}ms}`);
                     await displaySettings.apply(ev);
                     this.isIntervalScriptRunning = false;
                 } else {
