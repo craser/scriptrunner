@@ -5,6 +5,7 @@
         "validate": "streamdeck validate io.raser.streamdeck.scriptrunner.sdPlugin",
         "link": "streamdeck link io.raser.streamdeck.scriptrunner.sdPlugin",
         "lint": "eslint src",
+        "pack": "streamdeck pack io.raser.streamdeck.scriptrunner.sdPlugin",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"

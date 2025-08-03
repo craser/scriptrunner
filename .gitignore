@@ -10,4 +10,9 @@ node_modules/
 
 # Claude
 CLAUDE.md
+
+# Jest coverage results
 coverage
+
+# "Packed" Stream Deck plugin file
+io.raser.streamdeck.scriptrunner.streamDeckPlugin
