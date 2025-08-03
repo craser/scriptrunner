@@ -6,7 +6,7 @@ import streamDeck, {
     WillAppearEvent,
     WillDisappearEvent
 } from "@elgato/streamdeck";
-import {execFileSync} from 'node:child_process';
+import {execFile, execFileSync} from 'node:child_process';
 import {ArgumentStringParser} from '../utils/argument-string-parser';
 import {clearInterval, setInterval} from 'node:timers';
 import {RunIntervalSettings} from './run-interval-settings';
@@ -19,6 +19,7 @@ import {DisplaySettings} from './display-settings';
 export class RunInterval extends SingletonAction<RunIntervalSettings> {
 
     intervals: any[] = [];
+    isIntervalScriptRunning = false;
 
     clearIntervals(): void {
         streamDeck.logger.info(`clearing intervals (found ${this.intervals.length} running, should be 1)`);
@@ -48,9 +49,18 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
         if (this.validateIntervalSettings(ev.payload.settings)) {
             const {intervalScriptPath, intervalScriptArguments, intervalDelay} = ev.payload.settings;
             this.intervals.push(setInterval(async () => {
-                streamDeck.logger.info(`running interval`);
-                const displaySettings = await this.executeScript(intervalScriptPath, intervalScriptArguments);
-                await displaySettings.apply(ev);
+                if (!this.isIntervalScriptRunning) {
+                    this.isIntervalScriptRunning = true;
+                    streamDeck.logger.info(`running interval`);
+                    const scriptStartTime = Date.now();
+                    const displaySettings = await this.executeScript(intervalScriptPath, intervalScriptArguments);
+                    const elapsed = Date.now() - scriptStartTime
+                    streamDeck.logger.info(`Interval script ${intervalScriptPath} took ${elapsed}ms to run}`);
+                    await displaySettings.apply(ev);
+                    this.isIntervalScriptRunning = false;
+                } else {
+                    streamDeck.logger.warn(`Interval script takes longer to run than interval allows. Skipping this run.`)
+                }
             }, intervalDelay * 1000));
         }
     }
@@ -106,14 +116,27 @@ export class RunInterval extends SingletonAction<RunIntervalSettings> {
     }
 
     async executeScript(scriptPath: string, scriptArguments: string | null | undefined): Promise<DisplaySettings> {
-        streamDeck.logger.info(`running script: '${scriptPath}'`);
-        const parser = new ArgumentStringParser();
-        const args = scriptArguments ? parser.parse(scriptArguments) : [];
-        const stdout = execFileSync(scriptPath, args);
-        const json = stdout.toString()?.trim();
-        streamDeck.logger.info(`script returned: '${json}'`);
-        const displaySettings = DisplaySettings.parseJson(json);
-        return displaySettings;
+        return new Promise((resolve, reject) => {
+            streamDeck.logger.info(`running script: '${scriptPath}'`);
+            const parser = new ArgumentStringParser();
+            const args = scriptArguments ? parser.parse(scriptArguments) : [];
+            //const stdout = execFileSync(scriptPath, args);
+            execFile(scriptPath, args, (error, stdout, stderr) => {
+                try {
+                    if (error) {
+                        streamDeck.logger.error(`ERROR running script ${scriptPath}: ${stderr}`);
+                        streamDeck.logger.error(error);
+                        throw error;
+                    }
+                    const json = stdout.toString()?.trim();
+                    streamDeck.logger.info(`script returned: '${json}'`);
+                    const displaySettings = DisplaySettings.parseJson(json);
+                    resolve(displaySettings);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
     }
 
 }
