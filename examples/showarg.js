@@ -1,4 +1,4 @@
-#!/Users/craser/.nvm/versions/node/v24.4.1/bin/node
+#!/usr/bin/env node
 
 const n = process.argv[2] ? parseInt(process.argv[2]) : 0;
 const args = process.argv.slice(3)
