@@ -471,6 +471,7 @@ describe('RunInterval', () => {
         });
 
         test('should only run one instance of interval script at a time', (done) => {
+            jest.useFakeTimers();
             const mockEvent = {
                 action: mockAction,
                 payload: {
@@ -535,6 +536,12 @@ describe('RunInterval', () => {
             });
 
             (runInterval as any).startInterval(mockEvent);
+            
+            // Advance timers to trigger the callbacks
+            jest.advanceTimersByTime(2100); // Advance past all our test timers
+            
+            // Clean up
+            jest.useRealTimers();
         });
 
         // This test verifies the expected behavior but may fail due to implementation issues
