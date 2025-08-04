@@ -1,4 +1,4 @@
-# ScriptRunner: Stream Deck plugin to run local scripts &amp; update button displays
+# ScriptLink: Stream Deck plugin to run local scripts &amp; update button displays
 
 ## Run a script, update the button
 

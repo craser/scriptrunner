@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create imgs/colors directory if it doesn't exist
-const assetsDir = path.join(__dirname, '..', 'io.raser.streamdeck.scriptrunner.sdPlugin', 'imgs', 'colors');
+const assetsDir = path.join(__dirname, '..', 'io.raser.streamdeck.scriptlink.sdPlugin', 'imgs', 'colors');
 if (!fs.existsSync(assetsDir)) {
     fs.mkdirSync(assetsDir, { recursive: true });
 }

@@ -1,12 +1,12 @@
 {
-	"Name": "ScriptRunner",
+	"Name": "ScriptLink",
 	"Version": "0.1.0.0",
 	"Author": "Chris Raser",
 	"Actions": [
 		{
 			"Name": "Run Script",
-			"UUID": "io.raser.streamdeck.scriptrunner.runscript",
-			"Icon": "imgs/actions/scriptrunner/scriptrunner-icon",
+			"UUID": "io.raser.streamdeck.scriptlink.runscript",
+			"Icon": "imgs/actions/scriptlink/scriptlink-icon",
 			"Tooltip": "Runs a local script & updates the button",
 			"PropertyInspectorPath": "ui/run-script.html",
 			"Controllers": [
@@ -14,15 +14,15 @@
 			],
 			"States": [
 				{
-					"Image": "imgs/actions/scriptrunner/scriptrunner-icon",
+					"Image": "imgs/actions/scriptlink/scriptlink-icon",
 					"TitleAlignment": "middle"
 				}
 			]
 		},
 		{
 			"Name": "Run Interval",
-			"UUID": "io.raser.streamdeck.scriptrunner.runinterval",
-			"Icon": "imgs/actions/scriptrunner/scriptrunner-icon",
+			"UUID": "io.raser.streamdeck.scriptlink.runinterval",
+			"Icon": "imgs/actions/scriptlink/scriptlink-icon",
 			"Tooltip": "Runs a local script & updates the button on a timer",
 			"PropertyInspectorPath": "ui/run-interval.html",
 			"Controllers": [
@@ -30,17 +30,17 @@
 			],
 			"States": [
 				{
-					"Image": "imgs/actions/scriptrunner/scriptrunner-icon",
+					"Image": "imgs/actions/scriptlink/scriptlink-icon",
 					"TitleAlignment": "middle"
 				}
 			]
 		}
 	],
-	"Category": "ScriptRunner",
-	"CategoryIcon": "imgs/plugin/scriptrunner-icon",
+	"Category": "ScriptLink",
+	"CategoryIcon": "imgs/plugin/scriptlink-icon",
 	"CodePath": "bin/plugin.js",
 	"Description": "Run local scripts & update button displays",
-	"Icon": "imgs/plugin/scriptrunner-icon",
+	"Icon": "imgs/plugin/scriptlink-icon",
 	"SDKVersion": 2,
 	"Software": {
 		"MinimumVersion": "6.5"
@@ -59,5 +59,5 @@
 		"Version": "20",
 		"Debug": "enabled"
 	},
-	"UUID": "io.raser.streamdeck.scriptrunner"
+	"UUID": "io.raser.streamdeck.scriptlink"
 }

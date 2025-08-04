@@ -15,7 +15,7 @@ import {DisplaySettings} from './display-settings';
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.
  */
-@action({UUID: "io.raser.streamdeck.scriptrunner.runinterval"})
+@action({UUID: "io.raser.streamdeck.scriptlink.runinterval"})
 export class RunInterval extends SingletonAction<RunIntervalSettings> {
 
     intervals: any[] = [];

@@ -6,7 +6,7 @@ import * as path from 'path';
 import { getColorPngPath, getAvailableColors, isColorAvailable } from '../../src/utils/color-pngs';
 
 describe('color-pngs', () => {
-    const colorsDir = path.join(__dirname, '../../io.raser.streamdeck.scriptrunner.sdPlugin/imgs/colors');
+    const colorsDir = path.join(__dirname, '../../io.raser.streamdeck.scriptlink.sdPlugin/imgs/colors');
     
     // Get actual PNG files from the filesystem
     const getActualPngFiles = (): string[] => {

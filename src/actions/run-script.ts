@@ -14,7 +14,7 @@ import {RunScriptSettings} from './run-script-settings';
 /**
  * An example action class that displays a count that increments by one each time the button is pressed.
  */
-@action({UUID: "io.raser.streamdeck.scriptrunner.runscript"})
+@action({UUID: "io.raser.streamdeck.scriptlink.runscript"})
 export class RunScript extends SingletonAction<RunScriptSettings> {
 
     /**
