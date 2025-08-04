@@ -585,5 +585,63 @@ describe('RunInterval', () => {
 
             (runInterval as any).startInterval(mockEvent);
         });
+
+        test('should reset isIntervalScriptRunning flag when execFile throws an error', (done) => {
+            const mockEvent = {
+                action: mockAction,
+                payload: {
+                    settings: {
+                        intervalScriptPath: '/path/to/failing-script.sh',
+                        intervalDelay: 1,
+                    } as RunIntervalSettings,
+                },
+            };
+
+            const scriptError = new Error('Script execution failed');
+
+            // Mock execFile to always throw an error
+            mockExecFile.mockImplementation((path, args, options, callback) => {
+                const cb = typeof options === 'function' ? options : callback;
+                (cb as any)(scriptError, '', 'Script failed');
+                return {} as any;
+            });
+
+            // Capture the interval callback
+            let intervalCallback: Function | undefined;
+            mockSetInterval.mockImplementation((callback, delay) => {
+                intervalCallback = callback;
+                return 123 as any;
+            });
+
+            // Start the interval
+            (runInterval as any).startInterval(mockEvent);
+
+            // Verify flag starts as false
+            expect(runInterval.isIntervalScriptRunning).toBe(false);
+
+            // Ensure callback was captured
+            if (!intervalCallback) {
+                done(new Error('Interval callback was not captured'));
+                return;
+            }
+
+            // Call the interval callback to trigger script execution
+            intervalCallback().then(() => {
+                // This should never be reached due to the error
+                done(new Error('Promise should have been rejected'));
+            }).catch(() => {
+                // After the error, check if the flag was reset to false
+                setTimeout(() => {
+                    try {
+                        // BUG: This test should fail because the flag remains true after an error
+                        expect(runInterval.isIntervalScriptRunning).toBe(false);
+                        done();
+                    } catch (error) {
+                        // This is the expected failure - the bug causes the flag to remain true
+                        done(error);
+                    }
+                }, 10);
+            });
+        });
     });
 });
