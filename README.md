@@ -124,11 +124,31 @@ console.log(JSON.stringify({ title: color.toUpperCase(), color }));
 
 ## Installation
 
+If you just want to install ScriptLink on your Stream Deck:
+
 1. Download the latest release
 2. Double-click the `.streamDeckPlugin` file
 3. Stream Deck software will install it automatically
 
-## Building from Source
+## Development 
+
+If you want to make changes to the code & run this as a custom plugin on your Stream Deck:
+
+1. Install [Stream Deck](https://www.elgato.com/us/en/s/downloads?product=Stream%20Deck)
+2. Install the [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/intro/)):
+   - `npm install -g @elgato/cli@latest`
+3. Clone this repo:
+   - `git clone https://github.com/craser/streamdeck-scriptlink.git`
+4. cd into the repo & do the usual:
+   - `npm install`
+   - `npm run build`
+5. Link the local output directory to the Stream Deck:
+  - `npm run link`
+6. start the `watch` process to automatically rebuild when anything in `src` changes
+   - `npm run watch`
+
+
+   
 
 ```bash
 npm install
