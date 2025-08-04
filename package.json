@@ -10,11 +10,12 @@
     },
     "scripts": {
         "build": "rollup -c",
+        "clean": "rm -rf io.raser.streamdeck.scriptlink.streamDeckPlugin",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptlink\"",
         "validate": "streamdeck validate io.raser.streamdeck.scriptlink.sdPlugin",
         "link": "streamdeck link io.raser.streamdeck.scriptlink.sdPlugin",
         "lint": "eslint src",
-        "pack": "streamdeck pack io.raser.streamdeck.scriptlink.sdPlugin",
+        "pack": "npm run clean && npm run build && streamdeck pack io.raser.streamdeck.scriptlink.sdPlugin",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"

@@ -1,12 +1,146 @@
-# ScriptLink: Stream Deck plugin to run local scripts &amp; update button displays
+# ScriptLink
 
-## Run a script, update the button
+Run local scripts from your Stream Deck and let the button show you what happened.
 
-- Set a Stream Deck button to run a local script. (js, bash, python, etc)
--  Script returns JSON: `{ title: "FOO", background: "chartreuse" }`
--  Stream Deck button now shows the title "FOO" on a chartreuse background
+## The Problem
 
-## Optionally: Set a "Monitor" script
+Your Stream Deck buttons are static. They show the same icon and title all the time, whether your dev server's running, your build passed, or your coffee's ready. You could check those things manually, but that's what computers are for.
 
-- Set a Stream Deck will run the script periodically and update the button as above.
+## The Solution
+
+ScriptLink runs your local scripts and updates the button based on what they return. Script says the server's down? Button turns red. Build's passing? Green button, happy developer.
+
+## Two Flavors
+
+- **Run Script**: Press the button, run a script, update the display.
+
+- **Run Interval**: Same thing, but also runs a "monitor" script automatically on a timer.
+
+## What Your Scripts Return
+
+Your scripts just print JSON to stdout. ScriptLink reads it and updates the button:
+
+```json
+{
+  "title": "Server Up",
+  "color": "green"
+}
+```
+
+That's it. Title goes on the button, color becomes the background.  Or, you can specify a background image:
+
+```json
+{
+  "title": "Server Up",
+  "image": "path/to/thumbnail/histogram.png"
+}
+```
+
+### Available Properties
+
+- **title**: Text displayed on the button
+- **color**: Background color (supports 140+ CSS color names like "red", "chartreuse", "darkolivegreen")  
+- **image**: Path to a custom image file (overrides color)
+
+### Examples
+
+Show server status:
+```json
+{ "title": "API Up", "color": "green" }
+```
+
+Display build results:
+```json
+{ "title": "Build #47", "color": "red" }
+```
+
+Custom icon with data:
+```json
+{ "title": "5 Issues", "image": "/path/to/warning-icon.png" }
+```
+
+## Setting Up Actions
+
+### Run Script Action
+
+1. Drag the "Run Script" action to a button
+2. Set **Script Path** to your executable script
+3. Optionally add **Script Arguments** 
+4. Set **Default Title** (shown when button first loads)
+
+**Script Arguments** supports shell-style quoting:
+- `arg1 arg2` → `["arg1", "arg2"]`
+- `"quoted arg" simple` → `["quoted arg", "simple"]`  
+- `'single quotes' work\ too` → `["single quotes", "work too"]`
+
+### Run Interval Action
+
+Same as Run Script, plus:
+
+4. Set **Interval Script Path** (script to run on timer)
+5. Set **Interval Arguments** (optional)
+6. Set **Interval Delay** in seconds
+
+The interval script runs automatically. The main script still runs when you press the button.
+
+## Example Scripts
+
+### Server Status Check (Bash)
+```bash
+#!/bin/bash
+if curl -s http://localhost:3000/health > /dev/null; then
+  echo '{"title": "Server Up", "color": "green"}'
+else
+  echo '{"title": "Server Down", "color": "red"}'
+fi
+```
+
+### Git Status (Node.js)
+```javascript
+#!/usr/bin/env node
+const { execSync } = require('child_process');
+
+try {
+  const status = execSync('git status --porcelain', { encoding: 'utf8' });
+  const changes = status.trim().split('\n').length;
+  
+  if (status.trim() === '') {
+    console.log(JSON.stringify({ title: "Clean", color: "green" }));
+  } else {
+    console.log(JSON.stringify({ title: `${changes} changes`, color: "orange" }));
+  }
+} catch (e) {
+  console.log(JSON.stringify({ title: "Not a repo", color: "gray" }));
+}
+```
+
+### Random Color Demo
+```javascript
+#!/usr/bin/env node
+const colors = ['red', 'blue', 'green', 'purple', 'orange'];
+const color = colors[Math.floor(Math.random() * colors.length)];
+console.log(JSON.stringify({ title: color.toUpperCase(), color }));
+```
+
+## Installation
+
+1. Download the latest release
+2. Double-click the `.streamDeckPlugin` file
+3. Stream Deck software will install it automatically
+
+## Building from Source
+
+```bash
+npm install
+npm run build
+npm run pack
+```
+
+The packaged plugin will be in the project directory.
+
+## Why ScriptLink?
+
+Because your Stream Deck should be as dynamic as your workflow. Static buttons are fine for launching apps, but when you need real-time feedback from your development environment, ScriptLink bridges the gap between your scripts and your hardware.
+
+No more alt-tabbing to check if your server's running. No more wondering if your tests passed. Just glance at your Stream Deck.
 
