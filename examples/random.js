@@ -18,7 +18,6 @@ const color = COLORS[n];
 const image = `imgs/colors/${color}.png`
 
 console.log(JSON.stringify({
-    title: `[[${color}]]`,
-    //color,
+    title: color,
     image
 }));
