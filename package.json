@@ -1,4 +1,13 @@
 {
+    "name": "streamdeck-scriptlink",
+    "version": "0.1.0",
+    "description": "Stream Deck plugin for running local scripts and updating button displays",
+    "author": "Chris Raser",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/craser/streamdeck-scriptlink.git"
+    },
     "scripts": {
         "build": "rollup -c",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart io.raser.streamdeck.scriptlink\"",
