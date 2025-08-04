@@ -4,10 +4,10 @@
 import streamDeck from '@elgato/streamdeck';
 import { execFile } from 'node:child_process';
 import { setInterval, clearInterval } from 'node:timers';
-import { RunInterval } from '../src/actions/run-interval';
-import { ArgumentStringParser } from '../src/utils/argument-string-parser';
-import { DisplaySettings } from '../src/actions/display-settings';
-import { RunIntervalSettings } from '../src/actions/run-interval-settings';
+import { RunInterval } from '../../src/actions/run-interval';
+import { ArgumentStringParser } from '../../src/utils/argument-string-parser';
+import { DisplaySettings } from '../../src/actions/display-settings';
+import { RunIntervalSettings } from '../../src/actions/run-interval-settings';
 
 // Mock all dependencies
 jest.mock('@elgato/streamdeck', () => ({
@@ -34,13 +34,13 @@ jest.mock('node:timers', () => ({
     clearInterval: jest.fn(),
 }));
 
-jest.mock('../src/utils/argument-string-parser', () => ({
+jest.mock('../../src/utils/argument-string-parser', () => ({
     ArgumentStringParser: jest.fn().mockImplementation(() => ({
         parse: jest.fn(),
     })),
 }));
 
-jest.mock('../src/actions/display-settings', () => ({
+jest.mock('../../src/actions/display-settings', () => ({
     DisplaySettings: {
         parseJson: jest.fn(),
     },

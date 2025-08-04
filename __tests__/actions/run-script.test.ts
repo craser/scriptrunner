@@ -2,7 +2,7 @@
 // ABOUTME: Tests event handling, script execution, JSON parsing, and UI updates
 
 import streamDeck from '@elgato/streamdeck';
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { RunScript } from '../../src/actions/run-script';
 import { getColorPngPath, isColorAvailable } from '../../src/utils/color-pngs';
 import { ArgumentStringParser } from '../../src/utils/argument-string-parser';
@@ -25,7 +25,7 @@ jest.mock('@elgato/streamdeck', () => ({
 }));
 
 jest.mock('node:child_process', () => ({
-    execFileSync: jest.fn(),
+    execFile: jest.fn(),
 }));
 
 jest.mock('../../src/utils/color-pngs', () => ({
@@ -39,10 +39,14 @@ jest.mock('../../src/utils/argument-string-parser', () => ({
     })),
 }));
 
+// Mock types
+const mockExecFile = execFile as jest.MockedFunction<typeof execFile>;
+
 describe('RunScript', () => {
     let runScript: RunScript;
     let mockAction: any;
     let mockEvent: any;
+    let mockArgumentParser: any;
 
     beforeEach(() => {
         // Reset all mocks
@@ -64,6 +68,19 @@ describe('RunScript', () => {
                 settings: {},
             },
         };
+
+        // Setup mock argument parser
+        mockArgumentParser = {
+            parse: jest.fn().mockReturnValue([]),
+        };
+        (ArgumentStringParser as jest.MockedClass<typeof ArgumentStringParser>).mockImplementation(() => mockArgumentParser);
+
+        // Setup mock execFile to call callback with valid JSON
+        mockExecFile.mockImplementation((path, args, options, callback) => {
+            const cb = typeof options === 'function' ? options : callback;
+            (cb as any)(null, '{"title": "Success"}', '');
+            return {} as any; // Mock ChildProcess
+        });
     });
 
     describe('onDidReceiveSettings', () => {
@@ -148,13 +165,6 @@ describe('RunScript', () => {
     });
 
     describe('onKeyDown', () => {
-        beforeEach(() => {
-            // Setup default mocks
-            (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Success"}'));
-            (ArgumentStringParser as jest.Mock).mockImplementation(() => ({
-                parse: jest.fn().mockReturnValue([]),
-            }));
-        });
 
         describe('successful script execution', () => {
             test('should execute script without arguments', async () => {
@@ -168,21 +178,22 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Script Output"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Script Output"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
-                expect(execFileSync).toHaveBeenCalledWith('/path/to/script.sh', []);
+                expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', [], expect.any(Function));
                 expect(mockAction.setTitle).toHaveBeenCalledWith('Script Output');
                 expect(streamDeck.logger.info).toHaveBeenCalledWith("running script: '/path/to/script.sh'");
                 expect(streamDeck.logger.info).toHaveBeenCalledWith("script returned: '{\"title\": \"Script Output\"}'");
             });
 
             test('should execute script with parsed arguments', async () => {
-                const mockParser = {
-                    parse: jest.fn().mockReturnValue(['arg1', 'arg with spaces', 'arg3']),
-                };
-                (ArgumentStringParser as jest.Mock).mockImplementation(() => mockParser);
+                mockArgumentParser.parse.mockReturnValue(['arg1', 'arg with spaces', 'arg3']);
 
                 const event = {
                     ...mockEvent,
@@ -194,12 +205,16 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "With Args"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "With Args"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
-                expect(mockParser.parse).toHaveBeenCalledWith("'arg1' 'arg with spaces' arg3");
-                expect(execFileSync).toHaveBeenCalledWith('/path/to/script.sh', ['arg1', 'arg with spaces', 'arg3']);
+                expect(mockArgumentParser.parse).toHaveBeenCalledWith("'arg1' 'arg with spaces' arg3");
+                expect(mockExecFile).toHaveBeenCalledWith('/path/to/script.sh', ['arg1', 'arg with spaces', 'arg3'], expect.any(Function));
                 expect(mockAction.setTitle).toHaveBeenCalledWith('With Args');
             });
 
@@ -213,7 +228,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Only Title"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Only Title"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
@@ -231,7 +250,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Colored", "color": "red"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Colored", "color": "red"}', '');
+                    return {} as any;
+                });
                 (isColorAvailable as jest.Mock).mockReturnValue(true);
                 (getColorPngPath as jest.Mock).mockReturnValue('imgs/colors/red.png');
 
@@ -253,7 +276,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "With Image", "image": "/path/to/custom.png"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "With Image", "image": "/path/to/custom.png"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
@@ -271,7 +298,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Both", "color": "blue", "image": "/custom.png"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Both", "color": "blue", "image": "/custom.png"}', '');
+                    return {} as any;
+                });
                 (isColorAvailable as jest.Mock).mockReturnValue(true);
                 (getColorPngPath as jest.Mock).mockReturnValue('imgs/colors/blue.png');
 
@@ -294,7 +325,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Invalid Color", "color": "invalidcolor"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Invalid Color", "color": "invalidcolor"}', '');
+                    return {} as any;
+                });
                 (isColorAvailable as jest.Mock).mockReturnValue(false);
 
                 await runScript.onKeyDown(event);
@@ -315,7 +350,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Null Path", "color": "red"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Null Path", "color": "red"}', '');
+                    return {} as any;
+                });
                 (isColorAvailable as jest.Mock).mockReturnValue(true);
                 (getColorPngPath as jest.Mock).mockReturnValue(null);
 
@@ -337,7 +376,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"color": "green"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"color": "green"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
@@ -357,8 +400,10 @@ describe('RunScript', () => {
                 };
 
                 const error = new Error('Script not found');
-                (execFileSync as jest.Mock).mockImplementation(() => {
-                    throw error;
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(error, '', 'Script not found');
+                    return {} as any;
                 });
 
                 await runScript.onKeyDown(event);
@@ -378,7 +423,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('invalid json output'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, 'invalid json output', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
@@ -397,7 +446,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from(''));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
@@ -415,7 +468,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Test"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Test"}', '');
+                    return {} as any;
+                });
                 mockAction.setTitle.mockRejectedValue(new Error('setTitle failed'));
 
                 // The method should throw because setTitle fails
@@ -432,7 +489,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Test", "image": "/test.png"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Test", "image": "/test.png"}', '');
+                    return {} as any;
+                });
                 mockAction.setImage.mockRejectedValue(new Error('setImage failed'));
 
                 await runScript.onKeyDown(event);
@@ -453,7 +514,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"title": "Logged"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"title": "Logged"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
@@ -472,7 +537,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"color": "blue"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"color": "blue"}', '');
+                    return {} as any;
+                });
                 (isColorAvailable as jest.Mock).mockReturnValue(true);
                 (getColorPngPath as jest.Mock).mockReturnValue('imgs/colors/blue.png');
 
@@ -491,7 +560,11 @@ describe('RunScript', () => {
                     },
                 };
 
-                (execFileSync as jest.Mock).mockReturnValue(Buffer.from('{"image": "/custom.png"}'));
+                mockExecFile.mockImplementation((path, args, options, callback) => {
+                    const cb = typeof options === 'function' ? options : callback;
+                    (cb as any)(null, '{"image": "/custom.png"}', '');
+                    return {} as any;
+                });
 
                 await runScript.onKeyDown(event);
 
