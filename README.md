@@ -100,14 +100,17 @@ fi
 #!/usr/bin/env node
 import { execSync } from 'child_process';
 try {
-   const repo = process.argv[2] || throw "No repo specified";
+   const repo = process.argv[2];
+   if (!repo) {
+      throw new Error("no repo specified");
+   }
    const status = execSync(`cd "${repo}" && git status --porcelain`, { encoding: 'utf8' });
    const changes = status.trim().split('\n').length;
 
    if (status.trim() === '') {
       console.log(JSON.stringify({ title: "Clean", color: "green" }));
    } else {
-      console.log(JSON.stringify({ title: `${changes} changes`, color: "orange" }));
+      console.log(JSON.stringify({ title: `${changes}\nchanges`, color: "orange" }));
    }
 } catch (e) {
    console.log(JSON.stringify({ title: "Not a repo", color: "gray" }));
@@ -135,28 +138,19 @@ If you just want to install ScriptLink on your Stream Deck:
 If you want to make changes to the code & run this as a custom plugin on your Stream Deck:
 
 1. Install [Stream Deck](https://www.elgato.com/us/en/s/downloads?product=Stream%20Deck)
-2. Install the [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/intro/)):
+2. Install the [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/intro/)
    - `npm install -g @elgato/cli@latest`
-3. Clone this repo:
+3. Clone this repo
    - `git clone https://github.com/craser/streamdeck-scriptlink.git`
-4. cd into the repo & do the usual:
+4. cd into the repo & do the usual
    - `npm install`
    - `npm run build`
-5. Link the local output directory to the Stream Deck:
-  - `npm run link`
-6. start the `watch` process to automatically rebuild when anything in `src` changes
+5. Link the local output directory to the Stream Deck
+   - `npm run link`
+6. Start the `watch` process to automatically rebuild when anything in `src` changes
    - `npm run watch`
 
-
-   
-
-```bash
-npm install
-npm run build
-npm run pack
-```
-
-The packaged plugin will be in the project directory.
+Stream Deck will now automatically reload the plugin when you make changes.
 
 ## Why ScriptLink?
 
