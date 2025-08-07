@@ -5,7 +5,7 @@ import streamDeck, {
     SingletonAction,
     WillAppearEvent
 } from "@elgato/streamdeck";
-import {execFile, execFileSync} from 'node:child_process';
+import {execFile} from 'node:child_process';
 import {ArgumentStringParser} from '../utils/argument-string-parser';
 import {DisplaySettings} from './display-settings';
 import {RunScriptSettings} from './run-script-settings';
@@ -55,7 +55,6 @@ export class RunScript extends SingletonAction<RunScriptSettings> {
             streamDeck.logger.info(`running script: '${scriptPath}'`);
             const parser = new ArgumentStringParser();
             const args = scriptArguments ? parser.parse(scriptArguments) : [];
-            //const stdout = execFileSync(scriptPath, args);
             execFile(scriptPath, args, (error, stdout, stderr) => {
                 try {
                     if (error) {
