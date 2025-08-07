@@ -12,7 +12,7 @@ try {
     if (status.trim() === '') {
         console.log(JSON.stringify({ title: "Clean", color: "green" }));
     } else {
-        console.log(JSON.stringify({ title: `${changes} changes`, color: "orange" }));
+        console.log(JSON.stringify({ title: `${changes}\nchanges`, color: "orange" }));
     }
 } catch (e) {
     console.log(JSON.stringify({ title: "Not a repo", color: "gray" }));
